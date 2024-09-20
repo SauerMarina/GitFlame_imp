@@ -1243,6 +1243,8 @@ $.format = $.validator.format;
         var target = $(event.target);
         if (target.is(delegate)) {
           return handler.apply(target, arguments);
+           if (target.is(delegate)) {
+          return handler.apply(target, arguments);
         }
       });
     }
