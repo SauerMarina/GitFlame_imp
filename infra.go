@@ -13,7 +13,6 @@ import (
 	utl "github.com/vmware/terraform-provider-nsxt/api/utl"
 )
 
-
 type InfraClientContext utl.ClientContext
 
 func NewInfraClient(sessionContext utl.SessionContext, connector vapiProtocolClient_.Connector) *InfraClientContext {
