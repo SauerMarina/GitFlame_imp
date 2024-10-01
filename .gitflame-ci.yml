@@ -1,0 +1,65 @@
+stages:
+  - build
+  - test
+  - publish
+  - deploy
+
+build:
+  
+  stage: build
+  image: docker:stable
+  script:
+    - docker build -t app .
+
+test:
+  stage: test
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - echo "Running uni1tx tests1..."
+    - docker run app python -m unittest discover
+  artifacts:
+    paths:
+      - .
+
+deploy:
+  stage: deploy
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - echo "Deploying application!..."
+    - CONTAINER_NAME='python-app'
+    - CID=$(docker ps -q -f status=running -f name=^/${CONTAINER_NAME}$)
+    - if [ ! "${CID}" ]; then
+    - echo "Container doesn't exist"
+    - docker run -d -p 5000:5000 --name python-app1 app
+    - fi
+    - if [ "${CID}" ]; then
+    - echo "Container exists"
+    - echo "Removing container"
+    - docker rm python-app -f
+    - echo "Creating new container"
+    - docker run -d -p 5000:5000 --name python-app1 app
+    - fi
+    - unset CID
+    - echo "Container is running."
+  artifacts:
+    paths:
+      - .
+    
+publish:
+  stage: publish
+  image: docker:stable
+  services:
+    - docker:dind
+  script:
+    - source .env
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker tag app $DOCKER_USERNAME/app
+    - docker push $DOCKER_USERNAME/app
+  artifacts:
+    paths:
+      - .
+
